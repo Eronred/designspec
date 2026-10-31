@@ -1,6 +1,6 @@
 {
   "name": "designspec",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Keep AI-written UI on your design system: a spec of your tokens and components that coding agents follow and CI enforces.",
   "keywords": [
     "design-system",
