@@ -1,0 +1,813 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "presets": {
+      "default": [
+        "react"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "react",
+          "react-native",
+          "tailwind-v3",
+          "tailwind-v4",
+          "shadcn",
+          "base-ui",
+          "radix",
+          "chakra",
+          "mantine",
+          "mui"
+        ]
+      }
+    },
+    "specDir": {
+      "default": "design",
+      "description": "Folder holding the spec",
+      "type": "string"
+    },
+    "include": {
+      "default": [
+        "**/*.{js,jsx,ts,tsx,css,scss,less,vue,svelte}"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude": {
+      "default": [
+        "**/node_modules/**",
+        "**/.next/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/out/**",
+        "**/coverage/**",
+        "**/*.d.ts"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "uiDir": {
+      "default": "src/components/ui",
+      "description": "The design system's components",
+      "type": "string"
+    },
+    "uiImport": {
+      "default": "@/components/ui",
+      "description": "Import path of uiDir: an alias (@/components/ui) or a workspace package (@acme/ui)",
+      "type": "string"
+    },
+    "uiPackages": {
+      "default": [],
+      "description": "Design system packages from npm whose components are read from their type declarations, e.g. [\"@acme/ui\"]",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cssFiles": {
+      "default": [],
+      "description": "CSS files defining tokens (local @imports are followed)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "themeFiles": {
+      "default": [],
+      "description": "JS/TS modules exporting tokens, e.g. React Native themes: export const spacing = { md: 16 }",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tokenFiles": {
+      "default": [],
+      "description": "W3C DTCG or Tokens Studio JSON files, e.g. [\"tokens/base.json\", { \"path\": \"tokens/dark.json\", \"mode\": \"dark\" }]",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "string"
+              },
+              "set": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "tailwindConfig": {
+      "description": "Tailwind v3 config mapping utilities to CSS variables",
+      "type": "string"
+    },
+    "zones": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ignore": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowTokens": {
+            "description": "Token names (globs) allowed in this zone; anything else is reported",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "denyTokens": {
+            "description": "Token names (globs) not allowed in this zone",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "files"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "eslintAliases": {
+      "default": {},
+      "description": "Honor eslint-disable comments for these ESLint rules, e.g. { \"acme/design-tokens\": [\"no-palette-color\"] }; [\"*\"] maps to every rule",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "classFunctions": {
+      "default": [
+        "cn",
+        "clsx",
+        "classnames",
+        "cva",
+        "tv",
+        "twMerge",
+        "twJoin"
+      ],
+      "description": "Functions whose string arguments are class lists",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "restrictedImports": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Module specifiers, e.g. [\"lucide-react\", \"@radix-ui/**\"]"
+          },
+          "allowIn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Files allowed to import them"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "allowIn"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "figma": {
+      "type": "object",
+      "properties": {
+        "fileKey": {
+          "description": "The Figma file holding the design system's variables",
+          "type": "string"
+        },
+        "modes": {
+          "description": "Figma mode name → code mode, e.g. { \"Night\": \"dark\" }; \"base\" for the default",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "ignoreCollections": {
+          "description": "Figma collections to leave out of the comparison",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "rules": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "no-hardcoded-color": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "no-palette-color": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "blackWhite": {
+                      "description": "Also report bg-white/text-black without an opacity modifier",
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "no-arbitrary-value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "allow": {
+                      "description": "Utility prefixes that may take arbitrary values, e.g. tracking",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "prefixes": {
+                      "description": "Check exactly these utility prefixes instead of the default scale utilities",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "no-raw-style-value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "allow": {
+                      "description": "Raw numbers that are fine, default [0]",
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "scales": {
+                      "description": "Token groups per scale, e.g. { \"spacing\": [\"space\"] }",
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "prefer-ds-component": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "no-unknown-variant": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "no-variant-override": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "allow": {
+                      "description": "Exact classes that may override a variant, e.g. rounded-none",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "restricted-import": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "zone-tokens": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "no-unknown-token": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "allow": {
+                      "description": "Variable prefixes defined outside the project, e.g. --swiper-*",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "spec-drift": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "require-proposal": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "off"
+              ]
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warn",
+                    "off"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ignore": {
+                      "description": "Files this rule skips",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

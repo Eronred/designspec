@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/designspec/schema.json",
+  "presets": [
+    "react",
+    "tailwind-v4",
+    "shadcn",
+    "base-ui",
+    "radix"
+  ],
+  "uiDir": "src/components/ui",
+  "uiImport": "@/components/ui",
+  "cssFiles": [
+    "src/app/globals.css"
+  ],
+  "include": [
+    "**/*.{js,jsx,ts,tsx,css}"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**",
+    "**/coverage/**",
+    "**/*.d.ts"
+  ],
+  "rules": {}
+}

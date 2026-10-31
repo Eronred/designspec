@@ -1,0 +1,137 @@
+name: designspec
+description: Block pull requests that drift from your design system (tokens, components, variants, rules).
+author: designspec contributors
+branding:
+  icon: layers
+  color: purple
+
+inputs:
+  base:
+    description: Git ref to compare against. Defaults to the pull request base commit; leave empty on push events to check the whole project.
+    required: false
+    default: ""
+  working-directory:
+    description: Directory containing designspec.config.json (for monorepos).
+    required: false
+    default: "."
+  fail-on:
+    description: "Fail the check on: error, warn or never."
+    required: false
+    default: error
+  comment:
+    description: "Keep one PR comment up to date with every problem (needs pull-requests: write). Annotations alone are capped at 10 per step."
+    required: false
+    default: "true"
+  github-token:
+    description: Token used for the PR comment.
+    required: false
+    default: ${{ github.token }}
+  preview:
+    description: "On pull requests, attach the design system preview (preview.html, changes marked) as an artifact and list design system changes in the PR comment."
+    required: false
+    default: "true"
+  ai-review:
+    description: "Also run an AI review of the diff against design/rules.md. Suggestions only; never fails the check."
+    required: false
+    default: "false"
+  anthropic-api-key:
+    description: Anthropic API key for the AI review (pass a secret).
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    # Runs designspec from this action's own source, so the version is the ref in `uses:`.
+    - name: Build designspec
+      shell: bash
+      run: |
+        cd "$GITHUB_ACTION_PATH"
+        npm ci --no-audit --no-fund --loglevel=error
+        npm run build --silent
+
+    - name: designspec check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DESIGNSPEC_BASE: ${{ inputs.base || github.event.pull_request.base.sha }}
+        DESIGNSPEC_FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        args=(check --format github --fail-on "$DESIGNSPEC_FAIL_ON")
+        if [ -n "$DESIGNSPEC_BASE" ]; then args+=(--diff "$DESIGNSPEC_BASE"); fi
+        node "$GITHUB_ACTION_PATH/dist/cli.js" "${args[@]}"
+
+    - name: designspec preview
+      id: preview
+      if: ${{ !cancelled() && inputs.preview == 'true' && github.event.pull_request.number }}
+      continue-on-error: true
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DESIGNSPEC_BASE: ${{ inputs.base || github.event.pull_request.base.sha }}
+      run: |
+        # One artifact per project in a monorepo.
+        prefix=$(git rev-parse --show-prefix)
+        name="designspec-preview${prefix:+-$(echo "${prefix%/}" | tr '/' '-')}"
+        dir="$RUNNER_TEMP/$name"
+        node "$GITHUB_ACTION_PATH/dist/cli.js" preview --diff "$DESIGNSPEC_BASE" --out "$dir/preview.html"
+        echo "dir=$dir" >> "$GITHUB_OUTPUT"
+        echo "name=$name" >> "$GITHUB_OUTPUT"
+
+    - name: Upload the preview
+      id: artifact
+      if: ${{ !cancelled() && steps.preview.outputs.dir }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.preview.outputs.name }}
+        path: ${{ steps.preview.outputs.dir }}
+        retention-days: 30
+
+    - name: designspec PR comment
+      # Runs even when the check fails; never fails the job (e.g. without pull-requests: write).
+      if: ${{ !cancelled() && inputs.comment == 'true' && github.event.pull_request.number }}
+      continue-on-error: true
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        DESIGNSPEC_BASE: ${{ inputs.base || github.event.pull_request.base.sha }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+        PREVIEW: ${{ inputs.preview }}
+        PREVIEW_URL: ${{ steps.artifact.outputs.artifact-url }}
+      run: |
+        marker="<!-- designspec:$(git rev-parse --show-prefix) -->"
+        report=$(node "$GITHUB_ACTION_PATH/dist/cli.js" check --diff "$DESIGNSPEC_BASE" --format markdown --fail-on never)
+        changes=""
+        if [ "$PREVIEW" == "true" ]; then
+          changes=$(node "$GITHUB_ACTION_PATH/dist/cli.js" preview --diff "$DESIGNSPEC_BASE" --format markdown ${PREVIEW_URL:+--url "$PREVIEW_URL"} || true)
+        fi
+        if [ -n "$changes" ]; then report="$report"$'\n\n'"$changes"; fi
+        existing=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n1)
+        # Don't open a comment just to say all is well; do update one that reported problems.
+        if [[ "$report" == "## ✅"* && -z "$changes" && -z "$existing" ]]; then exit 0; fi
+        payload=$(jq -n --arg body "$marker"$'\n'"$report" '{body: $body}')
+        if [ -n "$existing" ]; then
+          gh api -X PATCH "repos/$REPO/issues/comments/$existing" --input - <<<"$payload" >/dev/null
+        else
+          gh api "repos/$REPO/issues/$PR_NUMBER/comments" --input - <<<"$payload" >/dev/null
+        fi
+
+    - name: designspec AI review
+      # Runs even when the check above fails: that's when suggestions help most.
+      if: ${{ !cancelled() && inputs.ai-review == 'true' }}
+      continue-on-error: true
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DESIGNSPEC_BASE: ${{ inputs.base || github.event.pull_request.base.sha }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+      run: |
+        if [ -z "$DESIGNSPEC_BASE" ]; then echo "AI review needs a pull request base; skipped."; exit 0; fi
+        node "$GITHUB_ACTION_PATH/dist/cli.js" review --diff "$DESIGNSPEC_BASE" --format github

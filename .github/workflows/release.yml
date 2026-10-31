@@ -1,0 +1,52 @@
+# Changesets: merging PRs with .changeset/*.md files opens a "Release: version packages" PR;
+# merging that PR publishes to npm, creates the GitHub release and moves the major action tag (v0).
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency: release
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write # npm trusted publishing and provenance
+
+jobs:
+  release:
+    # Off until the repository variable RELEASE_ENABLED is set to "true".
+    if: vars.RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest # trusted publishing needs npm 11.5+
+      - run: npm ci
+      - run: npm test
+
+      - id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npx changeset version
+          publish: npx changeset publish
+          title: "Release: version packages"
+          commit: "Release: version packages"
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Empty unless an NPM_TOKEN secret exists; npm then uses trusted publishing (OIDC).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Move the major action tag
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          version=$(node -p "require('./package.json').version")
+          major="v${version%%.*}"
+          git tag -f "$major" "v$version"
+          git push -f origin "$major"

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>designspec</title>
+  <meta name="description" content="Keep AI-written UI on your design system: a spec of your tokens and components that coding agents follow and CI enforces.">
+  <meta property="og:title" content="designspec">
+  <meta property="og:description" content="Keep AI-written UI on your design system: a spec of your tokens and components that coding agents follow and CI enforces.">
+  <meta property="og:image" content="https://eronred.github.io/designspec/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    :root {
+      --bg: #fbfaf8;
+      --fg: #1c1b19;
+      --muted: #6b675f;
+      --line: #e4e0d8;
+      --panel: #f3f0ea;
+      --accent: #3446d4;
+      --ok: #1f7a4d;
+      --warn: #a15c07;
+      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --fg: #ece9e3;
+        --muted: #9d988e;
+        --line: #2b2a27;
+        --panel: #1b1a18;
+        --accent: #8f9bff;
+        --ok: #5fc493;
+        --warn: #e0a24a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--sans); }
+    main { max-width: 860px; margin: 0 auto; padding: 72px 20px 48px; }
+    h1 { font: 600 clamp(2rem, 5vw, 2.75rem)/1.15 var(--sans); letter-spacing: -0.02em; margin: 0 0 16px; text-wrap: balance; }
+    h1 em { font-style: normal; color: var(--accent); }
+    .lede { font-size: 1.125rem; color: var(--muted); max-width: 640px; margin: 0 0 40px; }
+    section { display: grid; grid-template-columns: 160px 1fr; gap: 24px; padding: 28px 0; border-top: 1px solid var(--line); }
+    section > * { min-width: 0; }
+    section > h2 { font: 600 0.75rem/1.8 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+    @media (max-width: 640px) { section { grid-template-columns: 1fr; gap: 12px; } }
+    p { margin: 0 0 12px; }
+    code, pre, .chip, .tabs button { font-family: var(--mono); }
+    code { font-size: 0.9em; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+    pre { margin: 0; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font-size: 0.875rem; line-height: 1.55; }
+    .out-ok { color: var(--ok); }
+    .out-warn { color: var(--warn); }
+    .out-dim { color: var(--muted); }
+    .install { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .tabs { display: flex; gap: 4px; padding: 8px; border-bottom: 1px solid var(--line); }
+    .tabs button { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: none; border: 0; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+    .tabs button[aria-selected="true"] { color: var(--fg); background: var(--panel); }
+    .tabs button:focus-visible, .copy:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .command { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .command code { background: none; padding: 0; font-size: 0.95rem; flex: 1; overflow-x: auto; white-space: nowrap; }
+    .command .prompt { color: var(--accent); font-family: var(--mono); }
+    .copy { font: 0.75rem var(--mono); color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; cursor: pointer; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+    .chip { font-size: 0.75rem; padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px; }
+    dl.workflow { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 0; }
+    dl.workflow dt { font-family: var(--mono); color: var(--accent); }
+    dl.workflow dd { margin: 0; color: var(--muted); }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Keep AI-written UI on your <em>design system</em>.</h1>
+  <p class="lede">designspec reads your design system from code into a spec. Coding agents use it before they write UI, and a GitHub Action blocks pull requests that drift from it.</p>
+
+  <section aria-labelledby="why">
+    <h2 id="why">Why</h2>
+    <div>
+      <p>AI agents write UI fast, but they don't know your design system. They hardcode <code>#e5484d</code>, invent <code>variant="ghost2"</code>, resize a <code>&lt;Button&gt;</code> with classes and reach for <code>&lt;button&gt;</code>.</p>
+      <p>designspec tells them what to use instead, checks every pull request, and governs how the design system itself changes.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="install">
+    <h2 id="install">Install</h2>
+    <div class="install">
+      <div class="tabs" role="tablist" aria-label="Package manager">
+        <button role="tab" aria-selected="true" data-cmd="npx designspec init">npm</button>
+        <button role="tab" aria-selected="false" data-cmd="pnpm dlx designspec init">pnpm</button>
+        <button role="tab" aria-selected="false" data-cmd="bunx designspec init">bun</button>
+        <button role="tab" aria-selected="false" data-cmd="yarn dlx designspec init">yarn</button>
+      </div>
+      <div class="command" role="tabpanel">
+        <span class="prompt" aria-hidden="true">$</span>
+        <code id="cmd">npx designspec init</code>
+        <button class="copy" type="button" id="copy">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="check">
+    <h2 id="check">Check</h2>
+<pre><span class="out-dim">$</span> npx designspec check
+
+src/app/page.tsx
+  9:22   error  Hardcoded color "text-[#1a1a1a]".
+               <span class="out-dim">↳ Closest token: text-foreground</span>
+  16:24  error  "ghost2" is not a variant of Button.
+               <span class="out-dim">↳ Allowed: default, destructive, outline, ghost, link</span>
+  24:36  error  "h-12" overrides the height that Button's size variant controls.
+               <span class="out-dim">↳ Pick a size instead (default, sm, lg, icon)</span></pre>
+  </section>
+
+  <section aria-labelledby="agents">
+    <h2 id="agents">Agents</h2>
+    <div>
+      <ul class="chips" aria-label="AI tools">
+        <li class="chip">Claude Code</li><li class="chip">Cursor</li><li class="chip">GitHub Copilot</li><li class="chip">Gemini CLI</li><li class="chip">Windsurf</li><li class="chip">Codex</li><li class="chip">OpenCode</li>
+      </ul>
+      <p>Instructions for each tool, plus an MCP server to look up components and tokens (including the closest token to a color), check code before it's written, and open proposals.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="stacks">
+    <h2 id="stacks">Stacks</h2>
+    <ul class="chips" aria-label="Supported stacks">
+      <li class="chip">React</li><li class="chip">Next.js</li><li class="chip">React Native</li><li class="chip">Vue</li><li class="chip">Svelte</li>
+      <li class="chip">Tailwind v3 / v4</li><li class="chip">CSS · SCSS · Less</li><li class="chip">styled-components</li><li class="chip">Emotion</li>
+      <li class="chip">shadcn/ui</li><li class="chip">cva · tv</li><li class="chip">Base UI · Radix</li><li class="chip">Chakra</li><li class="chip">Mantine</li><li class="chip">MUI</li>
+      <li class="chip">W3C tokens</li><li class="chip">Tokens Studio</li><li class="chip">Figma</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="workflow">
+    <h2 id="workflow">Workflow</h2>
+    <dl class="workflow">
+      <dt>explore</dt><dd>adoption score, and the overrides and values code keeps repeating: missing variants and tokens</dd>
+      <dt>propose</dt><dd>a design system change, with the spec changes it expects</dd>
+      <dt>apply</dt><dd>sync the spec from code, migrate overrides to the new variant</dd>
+      <dt>verify</dt><dd>the code made exactly the declared changes</dd>
+      <dt>archive</dt><dd>keep the accepted proposal next to the spec</dd>
+    </dl>
+  </section>
+
+  <section aria-labelledby="links">
+    <h2 id="links">Links</h2>
+    <p><a href="https://github.com/Eronred/designspec">GitHub</a> · <a href="https://github.com/Eronred/designspec/tree/main/docs">Docs</a> · <a href="https://github.com/Eronred/designspec/blob/main/CHANGELOG.md">Changelog</a></p>
+  </section>
+
+  <footer>MIT license.</footer>
+</main>
+<script>
+  const tabs = document.querySelectorAll('[role="tab"]');
+  const cmd = document.getElementById("cmd");
+  tabs.forEach((tab) => tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+    cmd.textContent = tab.dataset.cmd;
+  }));
+  document.getElementById("copy").addEventListener("click", async (event) => {
+    try {
+      await navigator.clipboard.writeText(cmd.textContent);
+      event.target.textContent = "Copied";
+      setTimeout(() => (event.target.textContent = "Copy"), 1500);
+    } catch {
+      // clipboard not available (e.g. insecure context); the command stays selectable
+    }
+  });
+</script>
+</body>
+</html>

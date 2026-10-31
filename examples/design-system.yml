@@ -1,0 +1,18 @@
+# Copy to .github/workflows/design-system.yml
+name: Design system
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  designspec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed to diff against the PR base
+
+      - uses: Eronred/designspec@main

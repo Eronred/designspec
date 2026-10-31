@@ -1,0 +1,14 @@
+{
+  "name": "designspec",
+  "description": "designspec: keep AI-written UI on your design system.",
+  "owner": {
+    "name": "Erencan Arica"
+  },
+  "plugins": [
+    {
+      "name": "designspec",
+      "source": "./",
+      "description": "How to set up and use designspec: keep AI-written UI on your design system with a spec that agents follow and CI enforces."
+    }
+  ]
+}

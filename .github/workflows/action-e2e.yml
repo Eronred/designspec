@@ -1,0 +1,25 @@
+# Runs the action from this checkout against test/action-fixture, so action changes are tested on real PRs.
+name: Action e2e
+
+on:
+  pull_request:
+    paths:
+      - "action.yml"
+      - "src/**"
+      - "test/action-fixture/**"
+      - ".github/workflows/action-e2e.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./
+        with:
+          working-directory: test/action-fixture

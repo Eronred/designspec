@@ -1,0 +1,9 @@
+{
+  "name": "designspec",
+  "description": "How to set up and use designspec: keep AI-written UI on your design system with a spec that agents follow and CI enforces.",
+  "author": { "name": "Erencan Arica" },
+  "homepage": "https://github.com/Eronred/designspec",
+  "repository": "https://github.com/Eronred/designspec",
+  "license": "MIT",
+  "keywords": ["design-system", "design-tokens", "lint", "ai-agents"]
+}
