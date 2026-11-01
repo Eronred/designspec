@@ -22,6 +22,11 @@ export function parseColor(value: string): Color | undefined {
   }
 }
 
+/** `rgba(0,0,0,0)`, `#0000` and the like: the same as `transparent`, so not a hardcoded color. */
+export function isTransparent(value: string): boolean {
+  return parseColor(value)?.alpha === 0;
+}
+
 const distance = differenceCiede2000();
 const MAX_SUGGEST_DISTANCE = 15;
 

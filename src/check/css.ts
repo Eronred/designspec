@@ -1,6 +1,6 @@
 import type { Declaration, Root } from "postcss";
 import { parseStylesheet } from "../stylesheets.js";
-import { nearestColorToken, parseColor } from "../color.js";
+import { isTransparent, nearestColorToken, parseColor } from "../color.js";
 import { type Config, ruleSetting } from "../config.js";
 import type { Spec } from "../spec.js";
 import { tokenReferenceChecker, VAR_REFERENCE } from "./token-refs.js";
@@ -74,7 +74,7 @@ export function checkCss(file: string, text: string, config: Config, spec: Spec,
 
   root.walkDecls((decl) => {
     const value = decl.value.trim();
-    if (colorRule && !KEYWORDS.test(value)) {
+    if (colorRule && !KEYWORDS.test(value) && !isTransparent(value)) {
       const color = colorLiteral(value) ?? (COLOR_PROPERTY.test(decl.prop) && /^[a-z]+$/i.test(value) && parseColor(value) ? value : undefined);
       if (color) {
         // In SCSS / Less, prefer that language's own variables ($brand, @surface) over CSS custom properties.

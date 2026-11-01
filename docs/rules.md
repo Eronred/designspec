@@ -105,6 +105,7 @@ changed, or a component was added or deleted. Run `designspec sync`.
 
 ## `require-proposal` · error · `--diff` only
 
-A pull request changes the UI directory, the token sources or the spec without a proposal in
-`design/changes/` (or one being archived). Reported once per pull request. Not reported in the pull request
-that adopts designspec.
+A pull request changes the design system's code (the UI directory or the token sources) without a proposal
+in `design/changes/` (or one being archived). Reported once per pull request. A pull request that only
+updates the spec, such as `sync` after upgrading designspec, doesn't need one: `spec-drift` already checks
+the spec against the code. Not reported in the pull request that adopts designspec.

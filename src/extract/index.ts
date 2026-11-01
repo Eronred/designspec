@@ -61,7 +61,7 @@ export function diffSpec(extracted: Spec, spec: Spec, specDir: string): DriftIte
     else if (existing.value !== token.value || stable(existing.modes) !== stable(token.modes)) {
       items.push({ file: tokensFile, message: `Token ${k} changed in code (${existing.value} → ${token.value}).` });
     } else if (existing.type !== token.type) {
-      items.push({ file: tokensFile, message: `Token ${k} is a ${token.type} token, not ${existing.type}.` });
+      items.push({ file: tokensFile, message: `Token ${k} changed type from ${existing.type} to ${token.type}.` });
     }
   }
   for (const k of specTokens.keys()) {

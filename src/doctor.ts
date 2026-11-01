@@ -54,7 +54,9 @@ export async function doctor(root: string): Promise<DoctorReport> {
   let mcpServer: string | undefined;
   try {
     const servers = JSON.parse(await readFile(path.join(agentRoot, ".mcp.json"), "utf8")).mcpServers ?? {};
-    mcpServer = Object.keys(servers).find((name) => JSON.stringify(servers[name]).includes("designspec"));
+    const ours = Object.keys(servers).filter((name) => JSON.stringify(servers[name]).includes("designspec"));
+    // In a monorepo each app has its own entry (`-C apps/web`).
+    mcpServer = prefix ? ours.find((name) => (servers[name].args ?? []).includes(prefix)) : ours[0];
   } catch {
     // no .mcp.json
   }
