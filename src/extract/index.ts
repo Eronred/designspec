@@ -32,14 +32,34 @@ export async function extractSpec(root: string, config: Config): Promise<Spec> {
 
 /** Combines freshly extracted values with the hand-written parts of the existing spec (docs, `replaces`). */
 export function mergeSpec(extracted: Spec, previous: Spec): Spec {
-  const bySource = new Map(previous.components.map((c) => [c.source, c]));
+  const { pairs } = pairComponents(extracted.components, previous.components);
   return {
     tokens: extracted.tokens,
-    components: extracted.components.map((c) => {
-      const prev = bySource.get(c.source);
-      return prev ? { ...c, body: prev.body, replaces: prev.replaces } : c;
-    }),
+    components: pairs.map(([c, prev]) => (prev ? { ...c, body: prev.body, replaces: prev.replaces } : c)),
   };
+}
+
+/**
+ * Pairs each component in code with its spec entry: the same source file, or the same name when the file
+ * moved (into a workspace package, say). `removed` are spec entries left without a component.
+ */
+function pairComponents<C extends { name: string; source: string }, S extends { name: string; source: string }>(
+  code: C[],
+  spec: S[],
+): { pairs: [C, S | undefined][]; removed: S[] } {
+  const bySource = new Map(spec.map((c) => [c.source, c]));
+  const codeSources = new Set(code.map((c) => c.source));
+  const byName = new Map(spec.filter((c) => !codeSources.has(c.source)).map((c) => [c.name, c]));
+  const used = new Set<S>();
+  const pairs = code.map((c): [C, S | undefined] => {
+    const prev = bySource.get(c.source) ?? byName.get(c.name);
+    if (prev && !used.has(prev)) {
+      used.add(prev);
+      return [c, prev];
+    }
+    return [c, undefined];
+  });
+  return { pairs, removed: spec.filter((c) => !used.has(c)) };
 }
 
 export interface DriftItem {
@@ -68,20 +88,18 @@ export function diffSpec(extracted: Spec, spec: Spec, specDir: string): DriftIte
     if (!codeTokens.has(k)) items.push({ file: tokensFile, message: `Token ${k} is in the spec but no longer defined in code.` });
   }
 
-  const specComponents = new Map(spec.components.map((c) => [c.source, c]));
-  const codeComponents = new Map(extracted.components.map((c) => [c.source, c]));
-  for (const [source, component] of codeComponents) {
-    const existing = specComponents.get(source);
+  const { pairs, removed } = pairComponents(extracted.components, spec.components);
+  for (const [component, existing] of pairs) {
     if (!existing) {
-      items.push({ file: source, message: `Component ${component.name} is not registered in the spec.` });
+      items.push({ file: component.source, message: `Component ${component.name} is not registered in the spec.` });
+    } else if (existing.source !== component.source) {
+      items.push({ file: component.source, message: `Component ${component.name} moved from ${existing.source} to ${component.source}.` });
     } else if (stable(contract(existing)) !== stable(contract(component))) {
-      items.push({ file: source, message: `Component ${component.name} changed (exports or variants) but its spec is out of date.` });
+      items.push({ file: component.source, message: `Component ${component.name} changed (exports or variants) but its spec is out of date.` });
     }
   }
-  for (const [source, component] of specComponents) {
-    if (!codeComponents.has(source)) {
-      items.push({ file: `${specDir}/components/${source.split("/").pop()?.replace(/\.[^.]+$/, "")}.md`, message: `Component ${component.name} is in the spec but ${source} no longer exists.` });
-    }
+  for (const component of removed) {
+    items.push({ file: `${specDir}/components/${component.source.split("/").pop()?.replace(/\.[^.]+$/, "")}.md`, message: `Component ${component.name} is in the spec but ${component.source} no longer exists.` });
   }
   return items;
 }

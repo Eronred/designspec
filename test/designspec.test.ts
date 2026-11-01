@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runCheck } from "../src/check/index.js";
 import { arbitraryValue, stripVariants } from "../src/check/classes.js";
 import { apply, archive, createProposal, init, propose, sync } from "../src/commands.js";
-import { diffSpec } from "../src/extract/index.js";
+import { diffSpec, extractSpec } from "../src/extract/index.js";
 import { explore, specAt, verifyProposal } from "../src/workflow.js";
 import { figmaDiff, figmaPushScript, parseExports } from "../src/figma.js";
 import { runFix } from "../src/fix.js";
@@ -1303,6 +1303,25 @@ describe("found on a real project", () => {
     const markdown = changesMarkdown(before, after);
     expect(markdown).toContain("### Design system changes (1)");
     expect(markdown).toMatch(/\| changed \| `--radius` \| `0\.625rem`<br>color \| `0\.625rem`<br>dimension \|/);
+  });
+
+  it("keeps a component's docs when its file moves to a workspace package", async () => {
+    const doc = path.join(root, "design/components/button.md");
+    writeFileSync(doc, readFileSync(doc, "utf8").replace(/\n# Button\n[\s\S]*$/, "\n# Button\n\nUse `outline` in toolbars.\n"));
+    mkdirSync(path.join(root, "packages/ui/src"), { recursive: true });
+    cpSync(path.join(root, "src/components/ui"), path.join(root, "packages/ui/src"), { recursive: true });
+    rmSync(path.join(root, "src/components/ui"), { recursive: true });
+    setConfig({ uiDir: "packages/ui/src", uiImport: "@acme/ui" });
+
+    const config = await loadConfig(root);
+    const drift = diffSpec(await extractSpec(root, config), await loadSpec(root, config), "design").map((d) => d.message);
+    expect(drift).toContain("Component Button moved from src/components/ui/button.tsx to packages/ui/src/button.tsx.");
+    expect(drift.some((m) => m.includes("no longer exists"))).toBe(false);
+
+    await sync(root);
+    const synced = readFileSync(doc, "utf8");
+    expect(synced).toContain("source: packages/ui/src/button.tsx");
+    expect(synced).toContain("Use `outline` in toolbars.");
   });
 
   it("finds this app's MCP server in a monorepo", async () => {
