@@ -74,8 +74,9 @@ Run the same command locally: `npx designspec-kit check --diff origin/main` (fro
 - **`zone-tokens`**: the token belongs to another zone (e.g. `landing-*` in product UI); use one this zone allows.
 - **`spec-drift`**: code changed tokens or components and the spec wasn't updated. Run `npx designspec-kit sync`
   and commit `design/`.
-- **`require-proposal`**: the PR changes the design system (UI directory, token sources or spec) without a
-  proposal. Open one (below), or move the design system change to its own PR.
+- **`require-proposal`**: the PR changes the design system's code (UI directory or token sources) without a
+  proposal. Open one (below), or move the design system change to its own PR. Spec-only changes (`sync`
+  after an upgrade) don't need one.
 
 Problems recorded in `design/baseline.json` don't fail checks; `--no-baseline` shows them. Don't run
 `--update-baseline` to make a red check green: it hides new problems too. Use it only after a deliberate

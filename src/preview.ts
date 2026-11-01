@@ -87,7 +87,7 @@ export function previewChanges(before: Spec, after: Spec): Changes {
   for (const token of after.tokens) {
     const was = old.get(tokenKey(token));
     if (!was) changes.tokens.set(tokenKey(token), { status: "added" });
-    else if (was.value !== token.value || JSON.stringify(was.modes ?? {}) !== JSON.stringify(token.modes ?? {})) changes.tokens.set(tokenKey(token), { status: "changed", before: was });
+    else if (was.value !== token.value || was.type !== token.type || JSON.stringify(was.modes ?? {}) !== JSON.stringify(token.modes ?? {})) changes.tokens.set(tokenKey(token), { status: "changed", before: was });
   }
   changes.removedTokens = before.tokens.filter((t) => !now.has(tokenKey(t)));
 
@@ -355,7 +355,10 @@ function renderChanges(changes: Changes, spec: Spec): string {
   };
   for (const token of spec.tokens) {
     const change = changes.tokens.get(tokenKey(token));
-    if (change) rows.push(`<tr><td><span class="badge ${change.status}">${change.status}</span></td><td><code>${escape(label(token))}</code></td><td>${valueCell(change.before)}</td><td>${valueCell(token)}</td></tr>`);
+    // A token whose type changed (a font weight once read as a color) shows both types.
+    const typed = change && change.before && change.before.type !== token.type;
+    const type = (t: Token) => (typed ? `<br><span class="count">${escape(t.type)}</span>` : "");
+    if (change) rows.push(`<tr><td><span class="badge ${change.status}">${change.status}</span></td><td><code>${escape(label(token))}</code></td><td>${valueCell(change.before)}${change.before ? type(change.before) : ""}</td><td>${valueCell(token)}${type(token)}</td></tr>`);
   }
   for (const token of changes.removedTokens) rows.push(`<tr><td><span class="badge removed">removed</span></td><td><code>${escape(label(token))}</code></td><td>${valueCell(token)}</td><td></td></tr>`);
   for (const [name, change] of changes.components) {
@@ -389,7 +392,9 @@ export function changesMarkdown(before: Spec, after: Spec, previewUrl?: string):
   const lines = [`### Design system changes (${changes.count})`, "", "| | Item | Before | After |", "| --- | --- | --- | --- |"];
   for (const token of after.tokens) {
     const change = changes.tokens.get(tokenKey(token));
-    if (change) lines.push(`| ${change.status} | \`${cell(label(token))}\` | ${cell(show(change.before))} | ${cell(show(token))} |`);
+    const typed = change?.before && change.before.type !== token.type;
+    const type = (t: Token) => (typed ? `<br>${t.type}` : "");
+    if (change) lines.push(`| ${change.status} | \`${cell(label(token))}\` | ${cell(show(change.before))}${change.before ? type(change.before) : ""} | ${cell(show(token))}${type(token)} |`);
   }
   for (const token of changes.removedTokens) lines.push(`| removed | \`${cell(label(token))}\` | ${cell(show(token))} | |`);
   for (const [name, change] of changes.components) {

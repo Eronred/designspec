@@ -26,5 +26,5 @@ export const FILE_RULES: FileRule[] = [
 /** Rules that look at the project as a whole rather than one file. */
 export const PROJECT_RULES = {
   "spec-drift": { description: "The spec must match the tokens and components defined in code.", defaultLevel: "error" },
-  "require-proposal": { description: "Changes to the design system (UI directory, token CSS, spec) need a proposal in the same PR.", defaultLevel: "error" },
+  "require-proposal": { description: "Changes to the design system's code (UI directory, token sources) need a proposal in the same PR.", defaultLevel: "error" },
 } as const;

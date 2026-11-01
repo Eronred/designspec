@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runCheck } from "../src/check/index.js";
 import { arbitraryValue, stripVariants } from "../src/check/classes.js";
 import { apply, archive, createProposal, init, propose, sync } from "../src/commands.js";
+import { diffSpec } from "../src/extract/index.js";
 import { explore, specAt, verifyProposal } from "../src/workflow.js";
 import { figmaDiff, figmaPushScript, parseExports } from "../src/figma.js";
 import { runFix } from "../src/fix.js";
@@ -1193,7 +1194,7 @@ describe("explore, apply, verify", () => {
     );
     const result = await explore(root);
     expect(result.repeatedOverrides).toEqual([{ pattern: "Button.size: h-12 px-8", count: 3 }]);
-    expect(result.repeatedValues).toContainEqual({ rule: "no-hardcoded-color", value: "text-[#1850ff]", count: 2 });
+    expect(result.repeatedValues).toContainEqual({ rule: "no-hardcoded-color", value: "#1850ff", count: 2 });
     expect(result.hotspots[0].file).toBe("src/app/page.tsx");
   });
 });
@@ -1273,6 +1274,57 @@ describe("preview", () => {
     expect(parseColor("400")).toBeUndefined();
     expect(parseColor("9999")).toBeUndefined();
     expect(parseColor("#400")).toBeDefined();
+  });
+});
+
+describe("found on a real project", () => {
+  beforeEach(() => init(root, { force: false, agents: false, baseline: false }));
+
+  it("treats fully transparent colors as transparent", async () => {
+    writeFileSync(
+      path.join(root, "src/app/clear.tsx"),
+      `export const A = () => <><div style={{ backgroundColor: "rgba(0,0,0,0)" }} className="bg-[rgba(0,0,0,0)]" /><div style={{ color: "rgba(0,0,0,0.5)" }} /></>\n`,
+    );
+    const { violations } = await runCheck({ root, paths: ["src/app/clear.tsx"] });
+    expect(violations.filter((v) => v.rule === "no-hardcoded-color").map((v) => v.message)).toEqual([`Hardcoded color in style: color: "rgba(0,0,0,0.5)".`]);
+  });
+
+  it("says a token's type changed in words", async () => {
+    const config = await loadConfig(root);
+    const spec = await loadSpec(root, config);
+    const retyped = { ...spec, tokens: spec.tokens.map((t) => (t.cssVar === "--radius" ? { ...t, type: "color" as const } : t)) };
+    expect(diffSpec(spec, retyped, "design").map((d) => d.message)).toContain("Token --radius changed type from color to dimension.");
+  });
+
+  it("lists a type change in the preview diff", async () => {
+    const config = await loadConfig(root);
+    const after = await loadSpec(root, config);
+    const before = { ...after, tokens: after.tokens.map((t) => (t.cssVar === "--radius" ? { ...t, type: "color" as const } : t)) };
+    const markdown = changesMarkdown(before, after);
+    expect(markdown).toContain("### Design system changes (1)");
+    expect(markdown).toMatch(/\| changed \| `--radius` \| `0\.625rem`<br>color \| `0\.625rem`<br>dimension \|/);
+  });
+
+  it("finds this app's MCP server in a monorepo", async () => {
+    const app = path.join(root, "apps/mobile");
+    const repo = root;
+    mkdirSync(app, { recursive: true });
+    for (const f of ["designspec.config.json", "design"]) cpSync(path.join(repo, f), path.join(app, f), { recursive: true });
+    writeFileSync(
+      path.join(repo, ".mcp.json"),
+      JSON.stringify({ mcpServers: { "designspec-web": { command: "npx", args: ["-y", "designspec-kit", "-C", "apps/web", "mcp"] }, "designspec-mobile": { command: "npx", args: ["-y", "designspec-kit", "-C", "apps/mobile", "mcp"] } } }),
+    );
+    git("init", "-q", "-b", "main");
+    expect((await doctor(app)).agents.mcpServer).toBe("designspec-mobile");
+  });
+
+  it("counts the same color once in explore", async () => {
+    writeFileSync(
+      path.join(root, "src/app/white.tsx"),
+      `export const A = () => <><p className="text-[#FFF]" /><p className="bg-[#ffffff]" /><p style={{ color: "#fff" }} /></>\n`,
+    );
+    const result = await explore(root);
+    expect(result.repeatedValues).toContainEqual({ rule: "no-hardcoded-color", value: "#ffffff", count: 3 });
   });
 });
 

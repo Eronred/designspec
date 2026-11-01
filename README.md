@@ -180,8 +180,9 @@ On a pull request, the GitHub Action shows what changed in the design system: th
 changed tokens with before/after color swatches and added or removed components and variants, and the
 `designspec-preview` artifact is the full preview page with the changes marked.
 
-A PR that changes the UI directory, the token sources or the spec without a proposal fails
-`require-proposal`. Code and spec that disagree fail `spec-drift`.
+A PR that changes the UI directory or the token sources without a proposal fails `require-proposal`
+(updating only the spec, e.g. after upgrading designspec, needs none). Code and spec that disagree fail
+`spec-drift`.
 
 ## Rules
 

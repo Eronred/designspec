@@ -2,9 +2,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { formatHex } from "culori";
 import YAML from "yaml";
 import { type Adoption, formatAdoption, measureAdoption } from "./adoption.js";
 import { runCheck } from "./check/index.js";
+import { parseColor } from "./color.js";
 import { type Config, loadConfig, UserError } from "./config.js";
 import { extractSpec } from "./extract/index.js";
 import { fromDtcg, loadSpec, parseComponent, type Spec, specPaths } from "./spec.js";
@@ -219,7 +221,7 @@ export async function explore(root: string): Promise<ExploreResult> {
   const values = count(
     violations
       .filter((v) => v.rule === "no-hardcoded-color" || v.rule === "no-arbitrary-value" || v.rule === "no-raw-style-value")
-      .map((v) => `${v.rule}|${(/"([^"]+)"/.exec(v.message)?.[1] ?? v.message).toLowerCase()}`),
+      .map((v) => `${v.rule}|${repeatedValue(v.rule, /"([^"]+)"/.exec(v.message)?.[1] ?? v.message)}`),
   );
   const proposalsDir = specPaths(root, config).changes;
   const proposals = existsSync(proposalsDir) ? (await readdir(proposalsDir, { withFileTypes: true })).filter((e) => e.isDirectory()).map((e) => e.name) : [];
@@ -255,4 +257,12 @@ export function formatExplore(result: ExploreResult): string {
   }
   if (result.repeatedOverrides.length || result.repeatedValues.length) lines.push("", "Turn one into a proposal: designspec propose <name>");
   return lines.join("\n");
+}
+
+/** `#FFF`, `#fff` and `#ffffff` are one value; class names and React Native keys keep their case (`borderRadius`). */
+function repeatedValue(rule: string, value: string): string {
+  if (rule !== "no-hardcoded-color") return value;
+  // A class (`bg-[#fff]`) counts as its color, so the same color in bg- and text- classes adds up.
+  const color = parseColor(value) ?? parseColor(/\[([^\]]+)\]/.exec(value)?.[1] ?? "");
+  return color ? formatHex(color) + (color.alpha !== undefined && color.alpha < 1 ? ` / ${Math.round(color.alpha * 100)}%` : "") : value.toLowerCase();
 }

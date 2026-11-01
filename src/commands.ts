@@ -98,7 +98,7 @@ export async function sync(root: string): Promise<void> {
   if (removed.length) console.log(`  ${pc.dim("•")} Removed ${removed.map((f) => `${config.specDir}/components/${f}`).join(", ")}`);
   ok(`Updated ${config.specDir}/ (${drift.length} change${drift.length === 1 ? "" : "s"}).`);
   const changes = await activeChanges(root, config);
-  if (changes.length === 0) console.log(pc.yellow(`  No open proposal. CI will require one: run "designspec propose <name>".`));
+  if (changes.length === 0) console.log(pc.yellow(`  No open proposal. If token sources or components changed, pull requests need one: run "designspec propose <name>".`));
 }
 
 export async function propose(root: string, name: string): Promise<void> {

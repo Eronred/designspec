@@ -1,4 +1,4 @@
-import { COLOR_IN_TEXT, nearestColorToken, nearestColorTokenFor, parseColor } from "../../color.js";
+import { COLOR_IN_TEXT, isTransparent, nearestColorToken, nearestColorTokenFor, parseColor } from "../../color.js";
 import { type Config, hasTailwind } from "../../config.js";
 import { propertyKey, walk } from "../../source.js";
 import type { Token } from "../../spec.js";
@@ -13,6 +13,7 @@ export function isColorProp(name: string, config: Config): boolean {
   return COLOR_PROP.test(name) || (name === "c" && config.presets.includes("mantine"));
 }
 const KEYWORDS = /^(transparent|currentcolor|inherit|none)$/i;
+const neutral = (value: string) => KEYWORDS.test(value) || isTransparent(value);
 
 export const noHardcodedColor: FileRule = {
   id: "no-hardcoded-color",
@@ -24,7 +25,7 @@ export const noHardcodedColor: FileRule = {
       for (const classString of ctx.classStrings) {
         for (const token of tokenizeClasses(classString)) {
           const arbitrary = arbitraryValue(token.utility);
-          if (!arbitrary || arbitrary.value.includes("var(")) continue;
+          if (!arbitrary || arbitrary.value.includes("var(") || isTransparent(arbitrary.value)) continue;
           if (!parseColor(arbitrary.value) && !COLOR_IN_TEXT.test(arbitrary.value)) continue;
           const near = nearestColorTokenFor(arbitrary.prefix, arbitrary.value, ctx.spec.tokens);
           // Without a Tailwind utility the token is still usable as an arbitrary value: text-[var(--brand)].
@@ -37,7 +38,7 @@ export const noHardcodedColor: FileRule = {
 
     const reported = new Set<number>();
     for (const { key, value } of collectStyleProperties(ctx.ast)) {
-      if (value.type !== "StringLiteral" || KEYWORDS.test(value.value)) continue;
+      if (value.type !== "StringLiteral" || neutral(value.value)) continue;
       // Color-named keys may hold named colors (`color: "white"`); elsewhere look for color syntax (`border: "1px solid #ccc"`).
       const color = /color$/i.test(key) && parseColor(value.value) ? value.value : COLOR_IN_TEXT.exec(value.value)?.[0];
       if (!color) continue;
@@ -51,14 +52,14 @@ export const noHardcodedColor: FileRule = {
       if (node.type === "ObjectProperty" && node.value.type === "StringLiteral" && !reported.has(node.value.start!)) {
         const key = propertyKey(node.key);
         const value = node.value.value;
-        if (!key || !/color$/i.test(key) || KEYWORDS.test(value) || !(COLOR_IN_TEXT.test(value) || /^[a-z]+$/i.test(value)) || !parseColor(value)) return;
+        if (!key || !/color$/i.test(key) || neutral(value) || !(COLOR_IN_TEXT.test(value) || /^[a-z]+$/i.test(value)) || !parseColor(value)) return;
         const near = nearestColorToken(value, ctx.spec.tokens);
         ctx.report(node.value.start! + 1, `Hardcoded color ${key}: "${value}".`, suggest(near && reference(near), near));
         return;
       }
       if (node.type !== "JSXAttribute" || node.name.type !== "JSXIdentifier" || !isColorProp(node.name.name, ctx.config)) return;
       const value = node.value?.type === "JSXExpressionContainer" ? node.value.expression : node.value;
-      if (value?.type !== "StringLiteral" || KEYWORDS.test(value.value) || !parseColor(value.value)) return;
+      if (value?.type !== "StringLiteral" || neutral(value.value) || !parseColor(value.value)) return;
       const near = nearestColorToken(value.value, ctx.spec.tokens);
       ctx.report(value.start! + 1, `Hardcoded color ${node.name.name}="${value.value}".`, suggest(near && reference(near), near));
     });
