@@ -9,7 +9,7 @@ AI coding agents use that spec before they write UI, and a GitHub Action blocks 
 from it.
 
 ```
-$ npx designspec-cli init
+$ npx designspec-kit init
 ✔ Next.js + Tailwind v4
 ✔ shadcn/ui (src/components/ui): 3 components, 18 variant values
 ✔ Headless: base-ui, radix (allowed only inside src/components/ui)
@@ -19,7 +19,7 @@ $ npx designspec-cli init
 ```
 
 ```
-$ npx designspec-cli check --no-baseline
+$ npx designspec-kit check --no-baseline
 
 src/app/page.tsx
   9:22    error  Hardcoded color "text-[#1a1a1a]".  no-hardcoded-color
@@ -60,10 +60,10 @@ designspec does three things:
 ## Quick start
 
 ```bash
-npm install --save-dev designspec-cli
-npx designspec-cli init      # detect the stack, extract the spec, set up agents, record a baseline
-npx designspec-cli check     # check the project
-npx designspec-cli fix       # apply the fixes that are safe to apply automatically
+npm install --save-dev designspec-kit
+npx designspec-kit init      # detect the stack, extract the spec, set up agents, record a baseline
+npx designspec-kit check     # check the project
+npx designspec-kit fix       # apply the fixes that are safe to apply automatically
 ```
 
 Then add the GitHub Action (`.github/workflows/design-system.yml`):
@@ -154,12 +154,12 @@ that overrides it is reported (and `fix` turns it into the matching variant).
 Changes to the design system go through a proposal: explore, propose, apply, verify, archive.
 
 ```bash
-npx designspec-cli explore                          # where code works around the design system
-npx designspec-cli propose panel-compact-padding    # design/changes/panel-compact-padding/{proposal,tasks}.md
+npx designspec-kit explore                          # where code works around the design system
+npx designspec-kit propose panel-compact-padding    # design/changes/panel-compact-padding/{proposal,tasks}.md
 # ...write the expected changes in the proposal's front matter, add padding="compact" to panel.tsx...
-npx designspec-cli apply panel-compact-padding      # sync the spec, migrate overrides, verify
-npx designspec-cli verify panel-compact-padding     # declared changes are in code, nothing else changed
-npx designspec-cli archive panel-compact-padding    # once merged
+npx designspec-kit apply panel-compact-padding      # sync the spec, migrate overrides, verify
+npx designspec-kit verify panel-compact-padding     # declared changes are in code, nothing else changed
+npx designspec-kit archive panel-compact-padding    # once merged
 ```
 
 `explore` starts with a design system adoption score (how much of the UI uses its components and color

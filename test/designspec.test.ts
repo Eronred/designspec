@@ -67,8 +67,8 @@ describe("init", () => {
     expect(button?.variants.Button.size).toEqual(["default", "sm", "lg", "icon"]);
     expect(button?.replaces).toEqual(["button"]);
     expect(button?.controls.Button).toEqual({ size: ["height", "padding", "radius"] });
-    expect(readFileSync(path.join(root, "AGENTS.md"), "utf8")).toContain("designspec-cli propose");
-    expect(JSON.parse(readFileSync(path.join(root, ".mcp.json"), "utf8")).mcpServers.designspec.args).toEqual(["-y", "designspec-cli", "mcp"]);
+    expect(readFileSync(path.join(root, "AGENTS.md"), "utf8")).toContain("designspec-kit propose");
+    expect(JSON.parse(readFileSync(path.join(root, ".mcp.json"), "utf8")).mcpServers.designspec.args).toEqual(["-y", "designspec-kit", "mcp"]);
     expect(readFileSync(path.join(root, ".claude/skills/designspec-ui/SKILL.md"), "utf8")).toContain("nearest `designspec.config.json`");
   });
 });
@@ -124,7 +124,7 @@ describe("monorepo", () => {
     git("init", "-q", "-b", "main");
     await init(app, { force: false, agents: true, baseline: false });
     const mcp = JSON.parse(readFileSync(path.join(root, ".mcp.json"), "utf8"));
-    expect(mcp.mcpServers["designspec-web"].args).toEqual(["-y", "designspec-cli", "-C", "apps/web", "mcp"]);
+    expect(mcp.mcpServers["designspec-web"].args).toEqual(["-y", "designspec-kit", "-C", "apps/web", "mcp"]);
     expect(readFileSync(path.join(root, ".claude/skills/designspec-propose/SKILL.md"), "utf8")).toContain("name: designspec-propose");
     expect(readFileSync(path.join(app, "AGENTS.md"), "utf8")).toContain("design system");
   });
@@ -1126,10 +1126,10 @@ describe("agent tools", () => {
     await init(root, { force: false, agents: true, baseline: false });
     const read = (p: string) => readFileSync(path.join(root, p), "utf8");
     expect(read(".cursor/rules/designspec.mdc")).toMatch(/^---\ndescription: .+\nglobs: \*\*\/\*\.\{tsx,jsx,ts,js,vue,svelte,css,scss,less\}\nalwaysApply: false\n---\n/);
-    expect(JSON.parse(read(".cursor/mcp.json")).mcpServers.designspec).toEqual({ type: "stdio", command: "npx", args: ["-y", "designspec-cli", "mcp"] });
+    expect(JSON.parse(read(".cursor/mcp.json")).mcpServers.designspec).toEqual({ type: "stdio", command: "npx", args: ["-y", "designspec-kit", "mcp"] });
     expect(JSON.parse(read(".vscode/mcp.json")).servers).toEqual({
       github: { type: "http", url: "https://example.com/mcp" },
-      designspec: { type: "stdio", command: "npx", args: ["-y", "designspec-cli", "mcp"] },
+      designspec: { type: "stdio", command: "npx", args: ["-y", "designspec-kit", "mcp"] },
     });
     expect(read(".github/copilot-instructions.md")).toMatch(/^# Team rules\n\nUse pnpm\.\n\n<!-- designspec:start -->\n# Building UI with the design system/);
     expect(existsSync(path.join(root, "GEMINI.md"))).toBe(false);

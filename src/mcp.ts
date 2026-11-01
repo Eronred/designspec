@@ -276,7 +276,7 @@ export function createMcpServer(root: string, version: string): McpServer {
           role: "user",
           content: {
             type: "text",
-            text: `Implement the design system proposal "${name}": read its proposal.md and tasks.md in the spec's changes folder, make the code changes it describes (token sources, components in the UI directory), then run \`npx designspec-cli apply ${name}\`. Fix anything verify reports as missing or undeclared, and finish when \`npx designspec-cli verify ${name}\` passes.`,
+            text: `Implement the design system proposal "${name}": read its proposal.md and tasks.md in the spec's changes folder, make the code changes it describes (token sources, components in the UI directory), then run \`npx designspec-kit apply ${name}\`. Fix anything verify reports as missing or undeclared, and finish when \`npx designspec-kit verify ${name}\` passes.`,
           },
         },
       ],

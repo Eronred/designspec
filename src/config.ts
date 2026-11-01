@@ -100,7 +100,7 @@ export type RestrictedImport = z.infer<typeof RestrictedImportSchema>;
 export type Zone = z.infer<typeof ZoneSchema>;
 
 export const CONFIG_FILE = "designspec.config.json";
-export const SCHEMA_URL = "https://unpkg.com/designspec-cli/schema.json";
+export const SCHEMA_URL = "https://unpkg.com/designspec-kit/schema.json";
 export const DEFAULT_CONFIG: Config = ConfigSchema.parse({});
 
 /** JSON Schema for designspec.config.json, for editor completion. */

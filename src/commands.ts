@@ -133,7 +133,7 @@ export async function apply(root: string, name: string): Promise<VerifyResult> {
   const tasksFile = path.join(dir, "tasks.md");
   if (existsSync(tasksFile)) {
     const tasks = await readFile(tasksFile, "utf8");
-    await writeFile(tasksFile, tasks.replace(/- \[ \] (Run `npx designspec(?:-cli)? (?:apply|sync)[^\n]*)/g, "- [x] $1"));
+    await writeFile(tasksFile, tasks.replace(/- \[ \] (Run `npx designspec(?:-kit)? (?:apply|sync)[^\n]*)/g, "- [x] $1"));
   }
   const result = await verifyProposal(root, name);
   console.log(formatVerify(result));

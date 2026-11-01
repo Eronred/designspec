@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/designspec-cli/schema.json",
+  "$schema": "https://unpkg.com/designspec-kit/schema.json",
   "presets": [
     "react",
     "tailwind-v4",

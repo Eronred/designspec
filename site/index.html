@@ -86,14 +86,14 @@
     <h2 id="install">Install</h2>
     <div class="install">
       <div class="tabs" role="tablist" aria-label="Package manager">
-        <button role="tab" aria-selected="true" data-cmd="npx designspec-cli init">npm</button>
-        <button role="tab" aria-selected="false" data-cmd="pnpm dlx designspec-cli init">pnpm</button>
-        <button role="tab" aria-selected="false" data-cmd="bunx designspec-cli init">bun</button>
-        <button role="tab" aria-selected="false" data-cmd="yarn dlx designspec-cli init">yarn</button>
+        <button role="tab" aria-selected="true" data-cmd="npx designspec-kit init">npm</button>
+        <button role="tab" aria-selected="false" data-cmd="pnpm dlx designspec-kit init">pnpm</button>
+        <button role="tab" aria-selected="false" data-cmd="bunx designspec-kit init">bun</button>
+        <button role="tab" aria-selected="false" data-cmd="yarn dlx designspec-kit init">yarn</button>
       </div>
       <div class="command" role="tabpanel">
         <span class="prompt" aria-hidden="true">$</span>
-        <code id="cmd">npx designspec-cli init</code>
+        <code id="cmd">npx designspec-kit init</code>
         <button class="copy" type="button" id="copy">Copy</button>
       </div>
     </div>
@@ -101,7 +101,7 @@
 
   <section aria-labelledby="check">
     <h2 id="check">Check</h2>
-<pre><span class="out-dim">$</span> npx designspec-cli check
+<pre><span class="out-dim">$</span> npx designspec-kit check
 
 src/app/page.tsx
   9:22   error  Hardcoded color "text-[#1a1a1a]".

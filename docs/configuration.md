@@ -6,7 +6,7 @@ docs.
 
 ```json
 {
-  "$schema": "https://unpkg.com/designspec-cli/schema.json",
+  "$schema": "https://unpkg.com/designspec-kit/schema.json",
   "presets": ["react", "tailwind-v4", "shadcn", "base-ui"],
   "uiDir": "src/components/ui",
   "uiImport": "@/components/ui",

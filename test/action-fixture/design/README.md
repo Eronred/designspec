@@ -14,7 +14,7 @@ agents and by `designspec check` in CI.
 
 ## Changing the design system
 
-1. `npx designspec-cli propose <name>` and fill in `design/changes/<name>/proposal.md`.
+1. `npx designspec-kit propose <name>` and fill in `design/changes/<name>/proposal.md`.
 2. Change the code (tokens in CSS, components in the UI directory).
-3. `npx designspec-cli sync` to update this spec from code.
-4. Open a PR. Once merged, run `npx designspec-cli archive <name>`.
+3. `npx designspec-kit sync` to update this spec from code.
+4. Open a PR. Once merged, run `npx designspec-kit archive <name>`.
