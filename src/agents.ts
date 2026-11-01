@@ -35,7 +35,7 @@ export function detectTools(agentRoot: string): AgentTool[] {
 /** Writes each tool's instructions and MCP config, keeping everything else in shared files. Returns what it wrote. */
 export async function writeAgentFiles(root: string, config: Config, tools: readonly AgentTool[]): Promise<string[]> {
   const { agentRoot, serverName, projectDir } = agentLocation(root);
-  const command = { command: "npx", args: ["-y", "designspec", ...(projectDir ? ["-C", projectDir] : []), "mcp"] };
+  const command = { command: "npx", args: ["-y", "designspec-cli", ...(projectDir ? ["-C", projectDir] : []), "mcp"] };
   const written: string[] = [];
   const write = async (file: string, content: string) => {
     await mkdir(path.dirname(file), { recursive: true });

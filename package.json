@@ -1,5 +1,5 @@
 {
-  "name": "designspec",
+  "name": "designspec-cli",
   "version": "0.1.0",
   "description": "Keep AI-written UI on your design system: a spec of your tokens and components that coding agents follow and CI enforces.",
   "keywords": [
@@ -27,7 +27,8 @@
   "author": "Erencan Arica",
   "type": "module",
   "bin": {
-    "designspec": "dist/cli.js"
+    "designspec": "dist/cli.js",
+    "designspec-cli": "dist/cli.js"
   },
   "files": [
     "dist",

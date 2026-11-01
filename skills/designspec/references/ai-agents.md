@@ -8,7 +8,7 @@ It sets up Claude Code and the tools the repository already uses (a `.cursor/`, 
 `.windsurf/` folder). Choose others with `--tools`, or later with `designspec agents`:
 
 ```bash
-npx designspec agents --tools claude,cursor,copilot,gemini,windsurf
+npx designspec-cli agents --tools claude,cursor,copilot,gemini,windsurf
 ```
 
 | Tool | Instructions | MCP server |
@@ -51,11 +51,11 @@ npx skills add Eronred/designspec                             # other agents
 `init` registers the server in `.mcp.json`:
 
 ```json
-{ "mcpServers": { "designspec": { "command": "npx", "args": ["-y", "designspec", "mcp"] } } }
+{ "mcpServers": { "designspec": { "command": "npx", "args": ["-y", "designspec-cli", "mcp"] } } }
 ```
 
 In a monorepo there is one entry per app, named after its folder:
-`"designspec-web": { "command": "npx", "args": ["-y", "designspec", "-C", "apps/web", "mcp"] }`.
+`"designspec-web": { "command": "npx", "args": ["-y", "designspec-cli", "-C", "apps/web", "mcp"] }`.
 
 ### Tools
 

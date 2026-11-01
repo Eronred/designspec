@@ -31,10 +31,10 @@ agents and by \`designspec check\` in CI.
 
 ## Changing the design system
 
-1. \`npx designspec propose <name>\` and fill in \`${specDir}/changes/<name>/proposal.md\`.
+1. \`npx designspec-cli propose <name>\` and fill in \`${specDir}/changes/<name>/proposal.md\`.
 2. Change the code (tokens in CSS, components in the UI directory).
-3. \`npx designspec sync\` to update this spec from code.
-4. Open a PR. Once merged, run \`npx designspec archive <name>\`.
+3. \`npx designspec-cli sync\` to update this spec from code.
+4. Open a PR. Once merged, run \`npx designspec-cli archive <name>\`.
 `;
 
 export const RULES_MD = `# Design rules
@@ -92,9 +92,9 @@ ${sections.alternatives?.trim() || "<!-- Which existing tokens or components wer
 export const TASKS_TEMPLATE = `# Tasks
 
 - [ ] Update tokens / components in code
-- [ ] Run \`npx designspec apply <name>\` (sync the spec, migrate overrides, verify)
+- [ ] Run \`npx designspec-cli apply <name>\` (sync the spec, migrate overrides, verify)
 - [ ] Document usage in the component spec
-- [ ] \`npx designspec verify <name>\` passes
+- [ ] \`npx designspec-cli verify <name>\` passes
 `;
 
 export const AGENTS_START = "<!-- designspec:start -->";
@@ -110,8 +110,8 @@ Before writing or changing UI:
 1. Read \`${specDir}/components/*.md\`, \`${specDir}/tokens.json\` and \`${specDir}/rules.md\`.
 2. Reuse components from \`${uiImport}\`; use only the variants listed in their spec.
 3. Never hardcode colors, use raw Tailwind palette colors or arbitrary values. Use token utilities like \`bg-primary\`.
-4. If the design system doesn't cover what you need, don't invent it: run \`npx designspec propose <name>\`.
-5. Run \`npx designspec check\` before you finish.
+4. If the design system doesn't cover what you need, don't invent it: run \`npx designspec-cli propose <name>\`.
+5. Run \`npx designspec-cli check\` before you finish.
 ${AGENTS_END}`;
 }
 
@@ -159,8 +159,8 @@ If a one-off exception is truly needed, add \`// designspec-ignore-next-line <ru
 
 ## Before finishing
 
-Run \`check_code\` (MCP) or \`npx designspec check <files>\` from the project folder and fix every error.
-\`npx designspec fix\` rewrites exact variant overrides safely.
+Run \`check_code\` (MCP) or \`npx designspec-cli check <files>\` from the project folder and fix every error.
+\`npx designspec-cli fix\` rewrites exact variant overrides safely.
 `;
 }
 
@@ -174,18 +174,18 @@ description: Use when a UI task needs a token, variant or component that the pro
 
 ${FIND_SPEC}
 
-1. **Explore.** \`npx designspec explore\` (or the \`explore_design_system\` MCP tool) shows where code works around the
+1. **Explore.** \`npx designspec-cli explore\` (or the \`explore_design_system\` MCP tool) shows where code works around the
    design system: overrides repeated on a component point at a missing variant, values repeated as hardcoded
    colors or arbitrary values at a missing token. Confirm the need isn't covered (\`components/*.md\`, \`tokens.json\`).
-2. **Propose.** \`propose_change\` (MCP) or \`npx designspec propose <kebab-case-name>\` (e.g. \`add-warning-color\`).
+2. **Propose.** \`propose_change\` (MCP) or \`npx designspec-cli propose <kebab-case-name>\` (e.g. \`add-warning-color\`).
    Write why, what changes, and the options you rejected, and fill the front matter with the expected spec changes:
    \`tokens: { add: [--warning] }\`, \`components: { add: [Toast] }\`, \`variants: { Panel.padding: { add: [compact] } }\`.
-3. **Apply.** Change the code (token sources, components in the UI directory), then \`npx designspec apply <name>\`:
+3. **Apply.** Change the code (token sources, components in the UI directory), then \`npx designspec-cli apply <name>\`:
    it syncs the spec, migrates className overrides to the new variant, ticks its tasks and verifies.
-4. **Verify.** \`npx designspec verify <name>\` passes when every declared change is in code, nothing undeclared
+4. **Verify.** \`npx designspec-cli verify <name>\` passes when every declared change is in code, nothing undeclared
    changed and the tasks are done. Fix what it reports.
 5. Tell the user the proposal is ready for review in the pull request. After the merge,
-   \`npx designspec archive <name>\` moves it to the archive.
+   \`npx designspec-cli archive <name>\` moves it to the archive.
 `;
 }
 
@@ -202,14 +202,14 @@ design decision go through a proposal (\`designspec-propose\`), not straight int
 
 You need the Figma MCP server (\`use_figma\`) and the Figma file: \`figma.fileKey\` in the config, or ask the user.
 
-1. **Export.** Get the script from the designspec MCP tool \`figma_export_script\` (or \`npx designspec figma export-script\`)
+1. **Export.** Get the script from the designspec MCP tool \`figma_export_script\` (or \`npx designspec-cli figma export-script\`)
    and run it with \`use_figma\` on the file. It only reads. It exports variables that have WEB code syntax.
-2. **Compare.** Pass the result to \`figma_diff\` (or save it and run \`npx designspec figma diff <file>\`).
+2. **Compare.** Pass the result to \`figma_diff\` (or save it and run \`npx designspec-cli figma diff <file>\`).
    Show the user the differences per token and mode, plus tokens only in Figma or only in code.
 3. **Decide with the user**, token by token: should Figma follow the code, or is the code out of date?
    - Figma follows code: get a script from \`figma_push_script\` with those tokens, show the user the listed
      changes, and run it with \`use_figma\` only after they agree. It writes aliases where the code uses one.
-   - Code should change: open a proposal, change the token source, run \`npx designspec sync\`.
+   - Code should change: open a proposal, change the token source, run \`npx designspec-cli sync\`.
 4. Run the export and comparison again to confirm.
 
 Never write to Figma without the user's go-ahead for those specific changes.
